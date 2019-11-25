@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>userList</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.css}"></link>
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="http://cdn.bootcss.com/bootstrap/2.3.1/js/bootstrap-modal.js"></script>
+</head>
+<body class="container">
+
+<nav class="navbar navbar-inverse" role="navigation">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" th:href="@{/homepage}">Home</a>
+        </div>
+        <div>
+            <ul class="nav navbar-nav">
+                <li><a th:href="@{/collections?collectionType=file}">FileCollections</a></li>
+                <li><a th:href="@{/collections?collectionType=feature}">FeatureCollections</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<h1 th:text="${collectionName} + ' documents'">collection</h1>
+<br/><br/>
+<div id="table" class="with:80%">
+    <table th:if="${collectionType eq 'file'}" class="table table-hover">
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>id</th>
+            <th>file name</th>
+            <th>comment</th>
+            <td>contentType</td>
+            <td>size</td>
+            <td>uploadDate</td>
+            <td>md5</td>
+            <th>Delete</th>
+            <th>Download</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="fileDocument : ${documents}">
+            <th scope="row" th:text="${documents.getPageable().getPageNumber()*10 + fileDocumentStat.index + 1}">1</th>
+            <td th:text="${fileDocument.id}">id</td>
+            <td th:text="${fileDocument.name}">name</td>
+            <td th:text="${fileDocument.comment}">comment</td>
+            <td th:text="${fileDocument.contentType}">contentType</td>
+            <td th:text="${fileDocument.size}">size</td>
+            <td th:text="${fileDocument.uploadDate}">uploadDate</td>
+            <td th:text="${fileDocument.md5}">md5</td>
+            <td>
+            <form action="#" th:action="@{/documents(collectionType=${collectionType}, collectionName=${collectionName}, documentId=${fileDocument.id})}" th:method="delete" >
+                <input type="hidden" name="_method" value="delete" />
+                <button class="btn btn-sm btn-danger deleteBtn">Delete</button>
+            </form>
+            </td>
+            <td>
+                 <a th:href="@{/documents/downloadFile(collectionName=${collectionName}, documentId=${fileDocument.id})}" class="btn btn-sm btn-primary">Download</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <table th:if="${collectionType eq 'feature'}" class="table table-hover">
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>id</th>
+            <td>uploadDate</td>
+            <td>comment</td>
+            <td>content</td>
+            <th>Delete</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="featureDocument : ${documents}">
+            <th scope="row" th:text="${documents.getPageable().getPageNumber()*10 + featureDocumentStat.index + 1}">1</th>
+            <td th:text="${featureDocument.id}">id</td>
+            <td th:text="${featureDocument.uploadDate}">uploadDate</td>
+            <td th:text="${featureDocument.comment}">commment</td>
+            <td data-toggle="popover" th:attr="title=${featureDocument.content}, data-content=${featureDocument.content}">content</td>
+            <td>
+            <form action="#" th:action="@{/documents(collectionType=${collectionType}, collectionName=${collectionName}, documentId=${featureDocument.id})}" th:method="delete" >
+                <input type="hidden" name="_method" value="delete" />
+                <button class="btn btn-sm btn-danger deleteBtn">Delete</button>
+            </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <script>
+    $(function (){
+        $("[data-toggle='popover']").popover();
+    });
+    </script>
+</div>
+
+<div class="form-group">
+    <div class="col-sm-2 control-label">
+        <button type="button" class="btn btn-info" data-toggle="modal" data-target="#addDocumentModal">add</button>
+        <button th:if="${collectionType eq 'feature'}" type="button" class="btn btn-info" data-toggle="modal" data-target="#addOneModal">add one</button>
+    </div>
+</div>
+
+
+
+<div class="modal" id="addDocumentModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                Add File
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal"  enctype="multipart/form-data" th:action="@{/documents}"  method="post">
+                    <div class="form-group">
+                        <label >choose a file to upload</label>
+                        <input type="file" name="file" class="btn btn-info" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label >comment</label>
+                        <textarea type="text" class="form-control" rows="3" name="comment" placeholder="请输入comment"></textarea>
+                    </div>
+                    <input type="hidden" name="collectionType" th:attr="value=${collectionType}">
+                    <input type="hidden" name="collectionName" th:attr="value=${collectionName}">
+
+                    <div class="modal-footer">
+                        <input type="submit" value="Add" class="btn btn-info" />
+                        <input type="reset" value="Reset" class="btn btn-info" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="addOneModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                Add File
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal"  enctype="multipart/form-data" th:action="@{/documents/addOne}"  method="post">
+                    <div class="form-group">
+                        <label >feature content</label>
+                        <textarea type="text" class="form-control" rows="3" name="featureContent" placeholder="请输入featureDate" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label >comment</label>
+                        <textarea type="text" class="form-control" rows="3" name="comment" placeholder="请输入comment"></textarea>
+                    </div>
+                    <input type="hidden" name="collectionType" th:attr="value=${collectionType}">
+                    <input type="hidden" name="collectionName" th:attr="value=${collectionName}">
+
+                    <div class="modal-footer">
+                        <input type="submit" value="Add" class="btn btn-info" />
+                        <input type="reset" value="Reset" class="btn btn-info" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="bootstrap.min.js"></script> 
+<script>       
+$('input[required]').before('<span style="color:red">*</span>');   
+</script>
+
+
+
+<div class="modal-footer no-margin-top">
+    <ul class="pagination pull-right no-margin">
+
+        <!-- 首页 -->
+        <li>
+            <a th:href="@{/documents(collectionType=${collectionType}, collectionName=${collectionName}, pageNum=0)}"}>首页</a>
+        </li>
+
+        <!-- 上一页 -->
+        <li th:if="${documents.hasPrevious()}">
+            <a th:href="@{/documents(collectionType=${collectionType}, collectionName=${collectionName}, pageNum=${documents.previousPageable().getPageNumber()})}" th:text="上一页"></a>
+        </li>
+
+        <!-- 中间页 -->
+        <li th:if="${documents.getTotalPages() ne 0}" th:each="pageNum:${#numbers.sequence(0, documents.getTotalPages() - 1)}">
+            <a th:href="@{/documents(collectionType=${collectionType}, collectionName=${collectionName}, pageNum=${pageNum})}" th:text="${pageNum + 1}" th:if="${pageNum ne documents.getPageable().getPageNumber()}"></a>
+            <a th:href="@{/documents(collectionType=${collectionType}, collectionName=${collectionName}, pageNum=${pageNum})}" th:text="${pageNum + 1}" th:if="${pageNum eq documents.getPageable().getPageNumber()}" th:style="'font-weight:bold;background: #6faed9;'"></a>
+        </li>
+
+        <!-- 下一页 -->
+        <li th:if="${documents.hasNext()}">
+            <a th:href="@{/documents(collectionType=${collectionType}, collectionName=${collectionName}, pageNum=${documents.nextPageable().getPageNumber()})}" th:text="下一页"></a>
+        </li>
+
+        <!-- 尾页 -->
+        <li th:if="${documents.getTotalPages() ne 0}">
+            <a th:href="@{/documents(collectionType=${collectionType}, collectionName=${collectionName}, pageNum=${documents.getTotalPages() - 1})}">尾页</a>
+        </li>
+
+    </ul>
+</div>
+
+
+
+</body>
+</html>

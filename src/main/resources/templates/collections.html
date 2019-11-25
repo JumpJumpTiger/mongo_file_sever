@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>userList</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.css}"></link>
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="http://cdn.bootcss.com/bootstrap/2.3.1/js/bootstrap-modal.js"></script>
+
+</head>
+<body class="container">
+<nav class="navbar navbar-inverse" role="navigation">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" th:href="@{/homepage}">Home</a>
+        </div>
+        <div>
+            <ul class="nav navbar-nav">
+                <li><a th:href="@{/collections?collectionType=file}">FileCollections</a></li>
+                <li><a th:href="@{/collections?collectionType=feature}">FeatureCollections</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<h1 th:text="${collectionType} + ' collections'"}>collections</h1>
+<br/><br/>
+<div id="table" class="with:80%">
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>collection name</th>
+            <th>comment</th>
+            <th>Edit</th>
+            <th>Delete</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="pagedCollectionInfo : ${pagedCollectionsInfo}">
+            <th scope="row" th:text="${pagedCollectionsInfo.getPageable().getPageNumber()*10 + pagedCollectionInfoStat.index + 1}">1</th>
+            <td><a th:href="@{/documents(collectionType=${pagedCollectionInfo.collectionType}, collectionName=${pagedCollectionInfo.collectionName})}" th:text="${pagedCollectionInfo.collectionName}">name</a></td>
+            <td th:text="${pagedCollectionInfo.comment}">comment</td>
+            <td><button type="button" class="btn btn-info" data-toggle="modal" data-target="#editmodal" th:onclick=" 'setValues(\'' + ${pagedCollectionInfo.collectionName} + '\');' ">Edit</button></td>
+            <td>
+                <form action="#" th:action="@{/collections(collectionType=${pagedCollectionInfo.collectionType}, collectionName=${pagedCollectionInfo.collectionName})}" th:method="delete" >
+                    <input type="hidden" name="_method" value="delete" />
+                    <button class="btn btn-sm btn-danger deleteBtn">Delete</button>
+                </form>
+            </td>
+
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+  $("#editmodal").modal("hide");
+  function setValues(name){
+      $("#collectionName").val(name);
+  }
+</script>
+
+<div class="form-group">
+    <div class="col-sm-2 control-label">
+        <button type="button" class="btn btn-info" data-toggle="modal" data-target="#addmodal">add</button>
+    </div>
+</div>
+
+<!--弹窗 start -->
+<div class="modal" id="editmodal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                edit collection
+            </div>
+
+            <div class="modal-body">
+                <form action="#" class="form-horizontal"  th:action="@{/collections}"  th:method="put">
+                    <input type="hidden" name="_method" value="put" />
+                    <div class="form-group">
+                        <label >new collectionName</label>
+                        <input type="text" class="form-control" name="newCollectionName" placeholder="请输入新名称" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label >comment</label>
+                        <textarea type="text" class="form-control" rows="3" name="comment">请输入comment</textarea>
+                    </div>
+                    <input type="hidden" name="collectionType" th:attr="value=${collectionType}">
+                    <input type="hidden" name="collectionName" id='collectionName' value=''>
+
+                    <div class="modal-footer">
+                        <input type="submit" value="Add" class="btn btn-info" />
+                        <input type="reset" value="Reset" class="btn btn-info" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="modal" id="addmodal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                add collection
+            </div>
+
+            <div class="modal-body">
+                <form class="form-horizontal"  th:action="@{/collections}"  method="post">
+                    <div class="form-group">
+                        <label >collectionName</label>
+                        <input type="text" class="form-control" name="collectionName" placeholder="请输入名称" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label >comment</label>
+                        <textarea type="text" class="form-control" rows="3" name="comment">请输入comment</textarea>
+                    </div>
+                    <input type="hidden" name="collectionType" th:attr="value=${collectionType}">
+
+                    <div class="modal-footer">
+                        <input type="submit" value="Add" class="btn btn-info" />
+                        <input type="reset" value="Reset" class="btn btn-info" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="bootstrap.min.js"></script> 
+<script>       
+$('input[required]').before('<span style="color:red">*</span>');   
+</script>
+
+
+
+
+<div class="modal-footer no-margin-top">
+    <ul class="pagination pull-right no-margin">
+
+        <!-- 首页 -->
+        <li>
+            <a th:href="@{/collections(collectionType=${collectionType}, pageNum=0)}"}>首页</a>
+        </li>
+
+        <!-- 上一页 -->
+        <li th:if="${pagedCollectionsInfo.hasPrevious()}">
+            <a th:href="@{/collections(collectionType=${collectionType}, pageNum=${pagedCollectionsInfo.previousPageable().getPageNumber()})}" th:text="上一页"></a>
+        </li>
+
+        <!-- 中间页 -->
+        <li th:if="${pagedCollectionsInfo.getTotalPages() ne 0}" th:each="pageNum:${#numbers.sequence(0, pagedCollectionsInfo.getTotalPages() - 1)}">
+            <a th:href="@{/collections(collectionType=${collectionType}, pageNum=${pageNum})}" th:text="${pageNum + 1}" th:if="${pageNum ne pagedCollectionsInfo.getPageable().getPageNumber()}"></a>
+            <a th:href="@{/collections(collectionType=${collectionType}, pageNum=${pageNum})}" th:text="${pageNum + 1}" th:if="${pageNum eq pagedCollectionsInfo.getPageable().getPageNumber()}" th:style="'font-weight:bold;background: #6faed9;'"></a>
+        </li>
+
+        <!-- 下一页 -->
+        <li th:if="${pagedCollectionsInfo.hasNext()}">
+            <a th:href="@{/collections(collectionType=${collectionType}, pageNum=${pagedCollectionsInfo.nextPageable().getPageNumber()})}" th:text="下一页"></a>
+        </li>
+
+        <!-- 尾页 -->
+        <li th:if="${pagedCollectionsInfo.getTotalPages() ne 0}">
+            <a th:href="@{/collections(collectionType=${collectionType}, pageNum=${pagedCollectionsInfo.getTotalPages() - 1})}">尾页</a>
+        </li>
+
+    </ul>
+</div>
+</body>
+</html>

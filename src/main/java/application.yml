@@ -1,0 +1,46 @@
+thrift:
+  server:
+    faceTaskOutReceiver:
+      port: 7074
+    structureTaskOutReceiver:
+      port: 7075
+
+influx:
+  url: "http://localhost:8086"
+  username: admin
+  password: admin
+  database: recognition_latency
+  videoMeasurement: video_measure
+  userNameTag: rlgao
+
+
+facetasktest:
+  sources:
+    #- http://10.60.11.82:8082/data/video/XM031.avi
+    - rtsp://10.40.58.29/30min01.mp4
+  taskNum: 1
+  indexName: TESTIMPORTANT1
+  indexType: FACE
+  reveiveruri: http://10.60.25.42:8090/videoAnalysis1
+
+structuretasktest:
+  sources:
+#    - rtsp://10.40.80.32/30min02.mp4
+#    - rtsp://10.40.80.32/30min03.mp4
+    - rtsp://10.40.51.159/face10s.mp4
+  taskNum: 1
+  indexName: TESTIMPORTANT1
+  indexType: PEDESTRIAN
+  #reveiveruri: thrift://10.60.22.11:7075
+  reveiveruri: http://10.60.21.49:8090/structure
+  #reveiveruri: http://10.60.22.34:8090/structure
+
+testrepository:
+  url: http://localhost:8081
+
+server:
+  port: 8090
+  tomcat:
+    initial-size: 100
+    max-threads: 100
+    max-connections: 100
